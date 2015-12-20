@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using System.Collections;
+using System.Collections.Generic;
 
 public class WorldController : MonoBehaviour
 {
@@ -16,6 +16,8 @@ public class WorldController : MonoBehaviour
 	{
 		get { return current_; }
 	}
+
+    private Dictionary<Army, GameObject> armyGos = new Dictionary<Army, GameObject>();
 
 	// Use this for initialization
 	void Start ()
@@ -117,13 +119,21 @@ public class WorldController : MonoBehaviour
 	private void HandleOnArmyAdd (Army newArmy)
 	{
 		var cellArmy = CreateCellGO ("Army", "Armies", newArmy.X, newArmy.Y);
-		
-		SpriteRenderer cellSr = cellArmy.GetComponent<SpriteRenderer> ();
+        armyGos.Add(newArmy, cellArmy);
+
+        SpriteRenderer cellSr = cellArmy.GetComponent<SpriteRenderer> ();
 		cellSr.sprite = armySprite;
-	}
 
+        newArmy.OnArmyMoved += OnArmyMoved;
+    }
 
-	public Tile GetClosestTile(Vector3 position)
+    private void OnArmyMoved(Army army)
+    {
+        var cellArmy = armyGos[army];
+        cellArmy.transform.position = GetPositionForCell(army.X, army.Y);
+    }
+
+    public Tile GetClosestTile(Vector3 position)
 	{
 		return World.GetClosestTile(position);
 	}
@@ -132,10 +142,16 @@ public class WorldController : MonoBehaviour
 	public City GetCityAt(int x, int y)
 	{
 		return World.GetCityAt (x, y);
-	}
+    }
 
-	
-	public Vector3 GetPositionForCell(int x, int y)
+
+    public Vector3 GetPositionForCell(Tile t)
+    {
+        return new Vector3(t.X, t.Y, 0.0f);
+    }
+
+
+    public Vector3 GetPositionForCell(int x, int y)
 	{
 		return new Vector3 (x, y, 0.0f);
 	}

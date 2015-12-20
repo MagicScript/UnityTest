@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections.Generic;
 
 public class World
@@ -88,6 +89,9 @@ public class World
 		int x = Mathf.RoundToInt (position.x);
 		int y = Mathf.RoundToInt (position.y);
 
+        if (x < 0 || y < 0 || x >= Width || y >= Height)
+            return null;
+
 		return cells_[x, y];
 	}
 
@@ -129,7 +133,7 @@ public class World
 	{
 		Debug.LogFormat("Creating new army at {0}, {1}", x, y);
 		Army newArmy = new Army(this, x, y) { Name = name };
-		armies_.Add (newArmy);
+        armies_.Add (newArmy);
 		
 		if(OnArmyAdd != null)
 			OnArmyAdd(newArmy);
@@ -137,12 +141,81 @@ public class World
 		return newArmy;
 	}
 
+    public Tile[] FindPath(Tile start, Tile end)
+    {
+        HashSet<Tile> closedSet = new HashSet<Tile>();
+        PriorityQueue<Tile> openSet = new PriorityQueue<Tile>();
+        openSet.Add(start, ManhattanDistance(start, end));
+        Dictionary<Tile, Tile> cameFrom = new Dictionary<Tile, Tile>();
+
+        Dictionary<Tile, int> g_score = new Dictionary<Tile, int>();
+        g_score[start] = 0;
+
+        while (!openSet.Empty)
+        {
+            Tile current = openSet.Dequeue();
+            if (current == end)
+                return ReconstructPath(cameFrom, end);
+
+            closedSet.Add(current);
+            foreach(var neighbour in GetNeighbours(current))
+            {
+                if (closedSet.Contains(neighbour))
+                    continue;
+
+                int tentative_g_score = g_score[current] + 1;//1 is cost, needs to be updated
+                int tentative_f_score = tentative_g_score + ManhattanDistance(neighbour, end);
+
+                if (!openSet.Contains(neighbour))
+                {
+                    openSet.Add(neighbour, tentative_f_score);
+
+                    cameFrom[neighbour] = current;
+                    g_score[neighbour] = tentative_g_score;
+                }
+                else if (tentative_g_score >= g_score[neighbour])
+                    continue;
+                else
+                {
+                    openSet.Update(neighbour, tentative_f_score);
+
+                    cameFrom[neighbour] = current;
+                    g_score[neighbour] = tentative_g_score;
+                }
+
+            }
+        }
+        return null;
+    }
+
+    private Tile[] ReconstructPath(Dictionary<Tile, Tile> cameFrom, Tile current)
+    {
+        List<Tile> route = new List<Tile>();
+        route.Add(current);
+        while(cameFrom.ContainsKey(current))
+        {
+            current = cameFrom[current];
+            route.Add(current);
+        }
+        route.Reverse();
+        return route.ToArray();
+    }
+
+    private int ManhattanDistance(Tile start, Tile end)
+    {
+        return Math.Abs(start.X - end.X) + Math.Abs(start.Y - end.Y);
+    }
+
 
 	public void PerformEndTurn()
 	{
 		foreach(var city in cities_)
 		{
 			city.PerformProduction();
-		}
-	}
+        }
+        foreach (var army in armies_)
+        {
+            army.EndTurn();
+        }
+    }
 }
