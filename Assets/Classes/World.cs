@@ -44,7 +44,6 @@ public class World
 		}
 
 		AddCity (0, 0, "Ottawa");
-		AddCity (3, 3, "Toronto");
 	}
 
 	public Tile GetCellAt(int x, int y)

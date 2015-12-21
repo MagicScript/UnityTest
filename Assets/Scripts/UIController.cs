@@ -7,7 +7,11 @@ using System;
 public class UIController : MonoBehaviour
 {
 	public GameObject cityPanel;
+    public GameObject cityBuildingListItem;
+
 	public GameObject armyPanel;
+
+    public GameObject chooserDialog;
 
     private object selected;
 
@@ -19,6 +23,7 @@ public class UIController : MonoBehaviour
 		Current = this;
 		cityPanel.SetActive(false);
 		armyPanel.SetActive(false);
+        chooserDialog.SetActive(false);
 	}
 	
 	// Update is called once per frame
@@ -41,6 +46,39 @@ public class UIController : MonoBehaviour
 		armyPanel.SetActive(false);
 		ChangeText(cityPanel, "CityNameText", C.Name);
 
+        int produceTurns;
+        int produceAmount;
+        
+        if(!C.EstimateProduction(out produceAmount, out produceTurns))
+        {
+            ChangeText(cityPanel, "ConstructionText", "Production: None");
+        }
+        else if(produceAmount > 1)
+        {
+            ChangeText(cityPanel, "ConstructionText", string.Format("Production: {0} ({1}/turn)", C.CurrentProduction, produceAmount));
+        }
+        else if(produceTurns != 1)
+        {
+            ChangeText(cityPanel, "ConstructionText", string.Format("Production: {0} ({1} turns)", C.CurrentProduction, produceTurns));
+        }
+        else
+        {
+            ChangeText(cityPanel, "ConstructionText", string.Format("Production: {0} (1 turn)", C.CurrentProduction, produceTurns));
+        }
+
+        Transform buildingContent = cityPanel.transform.FindChild("BuildingList/Viewport/Content");
+        for(int i = buildingContent.childCount-1; i >= 0; --i)
+        {
+            Destroy(buildingContent.GetChild(i).gameObject);
+        }
+
+        foreach(var building in C.Buildings)
+        {
+            GameObject textGo = Instantiate(cityBuildingListItem);
+            textGo.transform.SetParent(buildingContent);
+            textGo.GetComponent<Text>().text = building.Name;
+        }
+
         selected = C;
     }
 	
@@ -60,9 +98,22 @@ public class UIController : MonoBehaviour
 
 
 	public void EndTurnButtonClick()
-	{
-		Debug.Log ("Ending Turn");
-		WorldController.Current.World.PerformEndTurn();
+    {
+        Debug.Log("Ending Turn");
+        WorldController.Current.World.PerformEndTurn();
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        if (selected is City)
+        {
+            Select((City)selected);
+        }
+        else if (selected is Army)
+        {
+            Select((Army)selected);
+        }
     }
 
     private Tile[] displayPath_ = null;
@@ -115,6 +166,33 @@ public class UIController : MonoBehaviour
         }
 
         throw new InvalidOperationException();
+    }
+
+    public void ChangeProduction_OnClick()
+    {
+        if (cityPanel.activeSelf && selected is City)
+        {
+            City selectedCity = (City)selected;
+
+            Production[] producable = selectedCity.GetAllowedProduction().ToArray();
+            DisplayChooser("Select new production", producable, true, (object chosen) => { ChangeProduction(selectedCity, chosen); });
+        }
+    }
+
+    private void ChangeProduction(City C, object what)
+    {
+        //null means cancel.
+        if (what == null)
+            return;
+
+        C.ChangeProduction(what as Production);
+
+        Refresh();
+    }
+
+    private void DisplayChooser(string message, object[] options, bool cancel, ChooserLogic.OptionChosen callback)
+    {
+        chooserDialog.GetComponent<ChooserLogic>().Show(message, options, cancel, callback);
     }
 
     private void ChangeText(GameObject obj, string objName, string text)

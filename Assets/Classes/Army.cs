@@ -10,7 +10,7 @@ public class Army
     public delegate void ArmyMove(Army army);
     public event ArmyMove OnArmyMoved;
 
-    private World world_;
+    //private World world_;
 	public int X { get; private set;}
 	public int Y { get;private set;}
     public int MovementRemaining { get; private set; }
@@ -25,7 +25,7 @@ public class Army
 
 	public Army(World world, int x, int y)
 	{
-		world_ = world;
+		//world_ = world;
 		X = x;
 		Y = y;
     }

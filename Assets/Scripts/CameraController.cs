@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.EventSystems;
 using System.Collections;
 
 public class CameraController : MonoBehaviour {
@@ -15,7 +16,10 @@ public class CameraController : MonoBehaviour {
 	}
 	
 	// Update is called once per frame
-	void Update () {
+	void Update ()
+    {
+        if (EventSystem.current.IsPointerOverGameObject())
+            return;
 
         //Left mouse button pans.
         if (Input.GetMouseButtonDown (0))
