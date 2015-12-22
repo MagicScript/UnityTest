@@ -6,22 +6,40 @@ using System;
 
 public class UIController : MonoBehaviour
 {
-	public GameObject cityPanel;
+	public GameObject cityPanelPrefab;
     public GameObject cityBuildingListItem;
 
-	public GameObject armyPanel;
+    public GameObject armyPanelPrefab;
 
-    public GameObject chooserDialog;
+    public GameObject chooserDialogPrefab;
+    private GameObject chooserDialog;
 
+    private GameObject cityPanel;
+    private GameObject armyPanel;
     private object selected;
 
 	public static UIController Current { get; private set; }
+
+    public bool Movable
+    {
+        get { return selected is Army; }
+    }
 
 	// Use this for initialization
 	void Start ()
 	{
 		Current = this;
-		cityPanel.SetActive(false);
+
+        cityPanel = Instantiate(cityPanelPrefab);
+        cityPanel.transform.SetParent(transform);
+
+        armyPanel = Instantiate(armyPanelPrefab);
+        armyPanel.transform.SetParent(transform);
+
+        chooserDialog = Instantiate(chooserDialogPrefab);
+        chooserDialog.transform.SetParent(transform, false);
+
+        cityPanel.SetActive(false);
 		armyPanel.SetActive(false);
         chooserDialog.SetActive(false);
 	}
@@ -37,53 +55,17 @@ public class UIController : MonoBehaviour
 	{
 		cityPanel.SetActive(false);
 		armyPanel.SetActive(false);
-	}
+    }
 
 
-	public void Select(City C)
-	{
-		cityPanel.SetActive(true);
-		armyPanel.SetActive(false);
-		ChangeText(cityPanel, "CityNameText", C.Name);
-
-        int produceTurns;
-        int produceAmount;
-        
-        if(!C.EstimateProduction(out produceAmount, out produceTurns))
-        {
-            ChangeText(cityPanel, "ConstructionText", "Production: None");
-        }
-        else if(produceAmount > 1)
-        {
-            ChangeText(cityPanel, "ConstructionText", string.Format("Production: {0} ({1}/turn)", C.CurrentProduction, produceAmount));
-        }
-        else if(produceTurns != 1)
-        {
-            ChangeText(cityPanel, "ConstructionText", string.Format("Production: {0} ({1} turns)", C.CurrentProduction, produceTurns));
-        }
-        else
-        {
-            ChangeText(cityPanel, "ConstructionText", string.Format("Production: {0} (1 turn)", C.CurrentProduction, produceTurns));
-        }
-
-        Transform buildingContent = cityPanel.transform.FindChild("BuildingList/Viewport/Content");
-        for(int i = buildingContent.childCount-1; i >= 0; --i)
-        {
-            Destroy(buildingContent.GetChild(i).gameObject);
-        }
-
-        foreach(var building in C.Buildings)
-        {
-            GameObject textGo = Instantiate(cityBuildingListItem);
-            textGo.transform.SetParent(buildingContent);
-            textGo.GetComponent<Text>().text = building.Name;
-        }
-
+    public void Select(City C)
+    {
+        cityPanel.GetComponent<CityUI>().Initialize(C);
         selected = C;
     }
-	
-	
-	public void Select(Army A)
+
+
+    public void Select(Army A)
 	{
 		cityPanel.SetActive(false);
 		armyPanel.SetActive(true);
@@ -168,41 +150,19 @@ public class UIController : MonoBehaviour
         throw new InvalidOperationException();
     }
 
-    public void ChangeProduction_OnClick()
-    {
-        if (cityPanel.activeSelf && selected is City)
-        {
-            City selectedCity = (City)selected;
-
-            Production[] producable = selectedCity.GetAllowedProduction().ToArray();
-            DisplayChooser("Select new production", producable, true, (object chosen) => { ChangeProduction(selectedCity, chosen); });
-        }
-    }
-
-    private void ChangeProduction(City C, object what)
-    {
-        //null means cancel.
-        if (what == null)
-            return;
-
-        C.ChangeProduction(what as Production);
-
-        Refresh();
-    }
-
-    private void DisplayChooser(string message, object[] options, bool cancel, ChooserLogic.OptionChosen callback)
+    public void DisplayChooser(string message, object[] options, bool cancel, ChooserLogic.OptionChosen callback)
     {
         chooserDialog.GetComponent<ChooserLogic>().Show(message, options, cancel, callback);
     }
 
-    private void ChangeText(GameObject obj, string objName, string text)
+    public static void ChangeText(GameObject obj, string objName, string text)
 	{
 		GameObject titleText = obj.transform.FindChild(objName).gameObject;
 		Text textComponent = titleText.GetComponent<Text>();
 		textComponent.text = text;
 	}
 	
-	private void ChangeText(Transform transform, string objName, string text)
+	public static void ChangeText(Transform transform, string objName, string text)
 	{
 		GameObject titleText = transform.FindChild(objName).gameObject;
 		Text textComponent = titleText.GetComponent<Text>();

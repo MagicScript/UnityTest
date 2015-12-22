@@ -58,7 +58,7 @@ public class CameraController : MonoBehaviour {
         }
 
         //Right mouse button moves.
-        if (selector.activeSelf)
+        if (selector.activeSelf && UIController.Current.Movable)
         {
             if (Input.GetMouseButtonDown(1))
             {
