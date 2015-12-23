@@ -15,8 +15,8 @@ public class World
 	public int Width { get; private set; }
 	public int Height { get; private set; }
 
+    private List<Civilization> civs_ = new List<Civilization>();
 	private List<City> cities_ = new List<City> ();
-
 	private List<Army> armies_ = new List<Army>();
 
 	public IEnumerable<City> Cities
@@ -43,7 +43,9 @@ public class World
 			}
 		}
 
-		AddCity (0, 0, "Ottawa");
+        Civilization civ = new Civilization();
+        civs_.Add(civ);
+        AddCity(civ, 0, 0, "Ottawa");
 	}
 
 	public Tile GetCellAt(int x, int y)
@@ -115,10 +117,10 @@ public class World
 	}
 
 
-	public City AddCity(int x, int y, string name)
+	public City AddCity(Civilization civ, int x, int y, string name)
 	{
 		Debug.LogFormat("Creating new city at {0}, {1}", x, y);
-		City newCity = new City(this, x, y) { Name = name };
+		City newCity = new City(civ, this, x, y) { Name = name };
 		cities_.Add (newCity);
 
 		if(OnCityAdd != null)
@@ -128,10 +130,10 @@ public class World
 	}
 	
 	
-	public Army AddArmy(int x, int y, string name)
+	public Army AddArmy(Civilization civ, int x, int y, string name)
 	{
 		Debug.LogFormat("Creating new army at {0}, {1}", x, y);
-		Army newArmy = new Army(this, x, y) { Name = name };
+		Army newArmy = new Army(civ, this, x, y) { Name = name };
         armies_.Add (newArmy);
 		
 		if(OnArmyAdd != null)

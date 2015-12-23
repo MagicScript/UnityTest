@@ -61,6 +61,7 @@ public class UIController : MonoBehaviour
     public void Select(City C)
     {
         cityPanel.GetComponent<CityUI>().Initialize(C);
+        armyPanel.SetActive(false);
         selected = C;
     }
 

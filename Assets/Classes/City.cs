@@ -5,6 +5,7 @@ using System;
 public class City
 {
 	private World world_;
+    public Civilization Civilization { get; private set; }
 	public int X { get; private set;}
 	public int Y { get; private set;}
 	public string Name { get; set; }
@@ -24,9 +25,10 @@ public class City
 
     private int productionAmount_ = 0;
 
-	public City(World world, int x, int y)
+	public City(Civilization civ, World world, int x, int y)
 	{
-		world_ = world;
+        Civilization = civ;
+        world_ = world;
 		X = x;
 		Y = y;
 	}
@@ -88,6 +90,6 @@ public class City
 
     public IEnumerable<Production> GetAllowedProduction()
     {
-        return Production.AllProductions.Where(p => p.CanBeBuilt(world_, this));
+        return Civilization.AllProductions.Where(p => p.CanBeBuilt(world_, this));
     }
 }

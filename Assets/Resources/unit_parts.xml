@@ -1,0 +1,14 @@
+<unit_parts>
+  <part>
+    <id>BUILD_ROAD</id>
+    <name>Build Road</name>
+    <type>TRAINING</type>
+    <cost>1</cost>
+  </part>
+  <part>
+    <id>WEAPON_CLUB</id>
+    <name>Club</name>
+    <type>WEAPON</type>
+    <cost>1</cost>
+  </part>
+</unit_parts>

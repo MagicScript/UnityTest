@@ -7,18 +7,8 @@ public class Production
     public bool AllowMultiple { get; protected set; }
     public int ProductionRequired { get; protected set; }
 
-    private static List<Production> allProductions_ = new List<Production>();
-
-    static Production()
-    {
-        new UnitProduction(Unit.Warrior);
-        new BuildingProduction(new Field());
-        new BuildingProduction(new Barracks());
-    }
-
     protected Production()
     {
-        allProductions_.Add(this);
     }
 
     public virtual void FinishProduction(World world, City C, ref int production)
@@ -34,14 +24,6 @@ public class Production
     public override string ToString()
     {
         return Name;
-    }
-
-    public static IEnumerable<Production> AllProductions
-    {
-        get
-        {
-            return allProductions_;
-        }
     }
 }
 
@@ -63,7 +45,7 @@ public class UnitProduction : Production
         Army inCityArmy = world.GetArmyAt(C.X, C.Y);
         if (inCityArmy == null)
         {
-            inCityArmy = world.AddArmy(C.X, C.Y, string.Format("Army of {0}", C.Name));
+            inCityArmy = world.AddArmy(C.Civilization, C.X, C.Y, string.Format("Army of {0}", C.Name));
         }
 
         int producedCount = production / ProductionRequired;

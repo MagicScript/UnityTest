@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.EventSystems;
-using System.Collections;
+using System.Collections.Generic;
 
 public class CameraController : MonoBehaviour {
 
@@ -9,6 +9,8 @@ public class CameraController : MonoBehaviour {
 	private bool panning_ = false;
     private Vector3 mouseDownPosition;
     private Vector3 lastMouseDragPosition;
+
+    private object lastSelected_;
 
 	// Use this for initialization
 	void Start () {
@@ -110,12 +112,13 @@ public class CameraController : MonoBehaviour {
 
             Army army = world.GetArmyAt(cell.X, cell.Y);
             City city = world.GetCityAt(cell.X, cell.Y);
-            if (army != null)
+            if (army != null && lastSelected_ != army)
             {
                 selector.transform.position = WorldController.Current.GetPositionForCell(army.X, army.Y);
                 selector.SetActive(true);
 
                 UIController.Current.Select(army);
+                lastSelected_ = army;
             }
             else if (city != null)
             {
@@ -123,17 +126,20 @@ public class CameraController : MonoBehaviour {
                 selector.SetActive(true);
 
                 UIController.Current.Select(city);
+                lastSelected_ = city;
             }
             else
             {
                 selector.SetActive(false);
                 UIController.Current.SelectNothing();
+                lastSelected_ = null;
             }
         }
         else
         {
             selector.SetActive(false);
             UIController.Current.SelectNothing();
+            lastSelected_ = null;
         }
     }
 }

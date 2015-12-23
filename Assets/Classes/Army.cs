@@ -23,7 +23,7 @@ public class Army
 		get { return unitCounts_; }
 	}
 
-	public Army(World world, int x, int y)
+	public Army(Civilization civ, World world, int x, int y)
 	{
 		//world_ = world;
 		X = x;

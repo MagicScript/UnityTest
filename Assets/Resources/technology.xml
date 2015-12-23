@@ -1,0 +1,12 @@
+<technologies>
+  <tech>
+    <name>Clear Path</name>
+    <category>CATEGORY_ROAD</category>
+    <tier>1</tier>
+  </tech>
+  <tech>
+    <name>Flatten Path</name>
+    <category>CATEGORY_ROAD</category>
+    <tier>2</tier>
+  </tech>
+</technologies>
